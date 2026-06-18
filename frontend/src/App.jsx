@@ -4,6 +4,7 @@ import Register from "./pages/Register";
 import Login from "./pages/Login";
 import Chat from "./pages/Chat";
 import AdminDashboard from "./pages/AdminDashboard";
+import SentimentChart from "./pages/SentimentChart";
 
 function App() {
   return (
@@ -13,6 +14,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/chat" element={<Chat />} />
         <Route path="/admin" element={<AdminDashboard />} />
+        <Route path="/analytics" element={<SentimentChart />} />
       </Routes>
     </BrowserRouter>
   );
