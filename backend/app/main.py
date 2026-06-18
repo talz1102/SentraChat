@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.routes.auth import router as auth_router
 from app.routes.chat_ws import router as chat_ws_router
+from app.routes.sentiment import router as sentiment_router
 
 app = FastAPI()
 
@@ -16,6 +17,7 @@ app.add_middleware(
 
 app.include_router(auth_router)
 app.include_router(chat_ws_router)
+app.include_router(sentiment_router)
 
 @app.get("/")
 def home():

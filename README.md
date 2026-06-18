@@ -57,6 +57,7 @@ Broadcast to all clients
 ## ⚙️ How to Run the Project
 
 ### 1. Clone Repository
+
 ```bash
 git clone <your-repo-url>
 cd SentraChat
