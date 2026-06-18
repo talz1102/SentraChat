@@ -1,59 +1,97 @@
 import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import "./Login.css";
 
 function Register() {
-  const [formData, setFormData] = useState({
-    username: "",
-    email: "",
-    password: "",
-  });
+  const navigate = useNavigate();
+  const [formData, setFormData] = useState({ username: "", email: "", password: "" });
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+    setError("");
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
+    setError("");
 
-    console.log("Sending data:", formData);
-
-    alert("Mock register successful (DB disabled)");
+    try {
+      console.log("Register data:", formData);
+      // TODO: replace with real API call
+      // await registerUser(formData);
+      navigate("/login");
+    } catch (err) {
+      setError(err?.response?.data?.detail || "Registration failed. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div>
-      <h2>Register</h2>
+    <div className="auth-page">
+      <div className="auth-card">
+        <div className="auth-card__logo">
+          <span className="auth-card__logo-mark">SC</span>
+          <span className="auth-card__logo-text">SentraChat</span>
+        </div>
+        <h2 className="auth-card__title">Create an account</h2>
+        <p className="auth-card__subtitle">Join SentraChat and start chatting</p>
 
-      <form onSubmit={handleSubmit}>
-        <input
-          name="username"
-          placeholder="Username"
-          onChange={handleChange}
-        />
+        <form className="auth-form" onSubmit={handleSubmit}>
+          <div className="auth-field">
+            <label htmlFor="username">Username</label>
+            <input
+              id="username"
+              name="username"
+              type="text"
+              placeholder="johndoe"
+              value={formData.username}
+              onChange={handleChange}
+              required
+            />
+          </div>
 
-        <br /><br />
+          <div className="auth-field">
+            <label htmlFor="email">Email</label>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              placeholder="you@example.com"
+              value={formData.email}
+              onChange={handleChange}
+              required
+            />
+          </div>
 
-        <input
-          name="email"
-          placeholder="Email"
-          onChange={handleChange}
-        />
+          <div className="auth-field">
+            <label htmlFor="password">Password</label>
+            <input
+              id="password"
+              name="password"
+              type="password"
+              placeholder="••••••••"
+              value={formData.password}
+              onChange={handleChange}
+              required
+            />
+          </div>
 
-        <br /><br />
+          {error && <p className="auth-error">{error}</p>}
 
-        <input
-          name="password"
-          placeholder="Password"
-          type="password"
-          onChange={handleChange}
-        />
+          <button className="auth-btn" type="submit" disabled={loading}>
+            {loading ? "Creating account…" : "Create account"}
+          </button>
+        </form>
 
-        <br /><br />
-
-        <button type="submit">Register</button>
-      </form>
+        <p className="auth-card__footer">
+          Already have an account?{" "}
+          <Link to="/login">Sign in</Link>
+        </p>
+      </div>
     </div>
   );
 }

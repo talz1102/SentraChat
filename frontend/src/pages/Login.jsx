@@ -1,50 +1,85 @@
 import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import "./Login.css";
 
 function Login() {
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-  });
+  const navigate = useNavigate();
+  const [formData, setFormData] = useState({ email: "", password: "" });
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+    setError("");
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
+    setError("");
 
-    console.log("Login data:", formData);
-
-    alert("Mock login successful (backend not connected yet)");
+    try {
+      console.log("Login data:", formData);
+      // TODO: replace with real API call
+      // const res = await loginUser(formData);
+      // localStorage.setItem("token", res.data.token);
+      navigate("/chat");
+    } catch (err) {
+      setError(err?.response?.data?.detail || "Invalid email or password.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div>
-      <h2>Login</h2>
+    <div className="auth-page">
+      <div className="auth-card">
+        <div className="auth-card__logo">
+          <span className="auth-card__logo-mark">SC</span>
+          <span className="auth-card__logo-text">SentraChat</span>
+        </div>
+        <h2 className="auth-card__title">Welcome back</h2>
+        <p className="auth-card__subtitle">Sign in to your account to continue</p>
 
-      <form onSubmit={handleSubmit}>
-        <input
-          name="email"
-          placeholder="Email"
-          onChange={handleChange}
-        />
+        <form className="auth-form" onSubmit={handleSubmit}>
+          <div className="auth-field">
+            <label htmlFor="email">Email</label>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              placeholder="you@example.com"
+              value={formData.email}
+              onChange={handleChange}
+              required
+            />
+          </div>
 
-        <br /><br />
+          <div className="auth-field">
+            <label htmlFor="password">Password</label>
+            <input
+              id="password"
+              name="password"
+              type="password"
+              placeholder="••••••••"
+              value={formData.password}
+              onChange={handleChange}
+              required
+            />
+          </div>
 
-        <input
-          type="password"
-          name="password"
-          placeholder="Password"
-          onChange={handleChange}
-        />
+          {error && <p className="auth-error">{error}</p>}
 
-        <br /><br />
+          <button className="auth-btn" type="submit" disabled={loading}>
+            {loading ? "Signing in…" : "Sign in"}
+          </button>
+        </form>
 
-        <button type="submit">Login</button>
-      </form>
+        <p className="auth-card__footer">
+          Don't have an account?{" "}
+          <Link to="/register">Create one</Link>
+        </p>
+      </div>
     </div>
   );
 }
