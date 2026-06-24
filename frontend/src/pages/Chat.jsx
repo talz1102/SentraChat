@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from "react";
+import { LuMessageCircle } from "react-icons/lu";
 import "./Chat.css";
 
 /* ─── WebSocket URL — untouched ─────────────────────────── */
@@ -116,7 +117,39 @@ function Chat() {
   };
 
   return (
-    <div className="chat-page">
+    <div className="chat-shell">
+
+      {/* ── Discord-style sidebar ── */}
+      <aside className="chat-sidebar">
+        <div className="chat-sidebar__brand">
+          <span className="chat-sidebar__brand-mark"><LuMessageCircle /></span>
+          <span className="chat-sidebar__brand-name">SentraChat</span>
+        </div>
+
+        <div className="chat-sidebar__section-label">Direct Messages</div>
+
+        <button type="button" className="chat-sidebar__conversation chat-sidebar__conversation--active">
+          <span className="chat-sidebar__convo-avatar">
+            <BotIcon />
+            {status === "online" && <span className="chat-sidebar__convo-dot" />}
+          </span>
+          <span className="chat-sidebar__convo-meta">
+            <span className="chat-sidebar__convo-name">SentraChat AI</span>
+            <span className="chat-sidebar__convo-sub">
+              {status === "online" ? "Online" : status === "connecting" ? "Connecting…" : "Offline"}
+            </span>
+          </span>
+        </button>
+
+        <div className="chat-sidebar__spacer" />
+
+        <div className="chat-sidebar__user">
+          <span className="chat-sidebar__user-avatar">{username.charAt(0).toUpperCase()}</span>
+          <span className="chat-sidebar__user-name">{username}</span>
+        </div>
+      </aside>
+
+      <div className="chat-page">
 
       {/* ── Status banners ── */}
       {status === "connecting" && (
@@ -243,6 +276,7 @@ function Chat() {
         </p>
       </div>
 
+      </div>
     </div>
   );
 }

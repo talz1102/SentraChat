@@ -1,80 +1,102 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useLayoutEffect, useRef } from "react";
 import { NavLink, useNavigate, useLocation } from "react-router-dom";
+import {
+  LuHouse,
+  LuMessageCircle,
+  LuChartBar,
+  LuSparkles,
+  LuInfo,
+  LuSettings,
+  LuShieldCheck,
+  LuSearch,
+  LuBell,
+  LuSun,
+  LuMoon,
+  LuChevronDown,
+  LuMenu,
+  LuX,
+  LuLogOut,
+} from "react-icons/lu";
 import "./Navbar.css";
 
-/* ── Icons ── */
-const IconChat = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-  </svg>
-);
-const IconAnalytics = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <line x1="18" y1="20" x2="18" y2="10" /><line x1="12" y1="20" x2="12" y2="4" /><line x1="6" y1="20" x2="6" y2="14" />
-  </svg>
-);
-const IconAdmin = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="12" cy="8" r="4" /><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
-  </svg>
-);
-const IconLogout = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-    <polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" />
-  </svg>
-);
-const IconChevron = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="6 9 12 15 18 9" />
-  </svg>
-);
-const IconMenu = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <line x1="3" y1="6"  x2="21" y2="6"  />
-    <line x1="3" y1="12" x2="21" y2="12" />
-    <line x1="3" y1="18" x2="21" y2="18" />
-  </svg>
-);
-const IconClose = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
-  </svg>
-);
+const THEME_KEY = "sentrachat_theme";
 
+/* ── NAV ITEMS ── */
 const BASE_NAV = [
-  { to: "/chat",      label: "Chat",      Icon: IconChat      },
-  { to: "/analytics", label: "Analytics", Icon: IconAnalytics },
+  { to: "/", label: "Home", Icon: LuHouse },
+  { to: "/chat", label: "Chat", Icon: LuMessageCircle },
+  { to: "/analytics", label: "Analytics", Icon: LuChartBar },
+  { to: "/features", label: "Features", Icon: LuSparkles },
+  { to: "/about", label: "About", Icon: LuInfo },
+  { to: "/settings", label: "Settings", Icon: LuSettings },
 ];
+
+function getInitialTheme() {
+  const saved = localStorage.getItem(THEME_KEY);
+  if (saved === "light" || saved === "dark") return saved;
+  return window.matchMedia?.("(prefers-color-scheme: dark)").matches
+    ? "dark"
+    : "light";
+}
 
 function Navbar() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const [menuOpen,    setMenuOpen]    = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
-  const profileRef = useRef(null);
+  const [notifOpen, setNotifOpen] = useState(false);
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
+  const [theme, setTheme] = useState(getInitialTheme());
 
-  const isAdmin  = localStorage.getItem("is_admin") === "true";
+  const profileRef = useRef(null);
+  const notifRef = useRef(null);
+
+  const isAdmin = localStorage.getItem("is_admin") === "true";
   const username = localStorage.getItem("username") || "User";
 
   const navItems = isAdmin
-    ? [...BASE_NAV, { to: "/admin", label: "Admin", Icon: IconAdmin }]
+    ? [...BASE_NAV, { to: "/admin", label: "Admin", Icon: LuShieldCheck }]
     : BASE_NAV;
 
-  /* close mobile menu on route change */
-  useEffect(() => { setMenuOpen(false); setProfileOpen(false); }, [location.pathname]);
-
-  /* close dropdown on outside click */
+  /* ── CLOSE ON ROUTE CHANGE ── */
   useEffect(() => {
-    const handle = (e) => {
+    setMenuOpen(false);
+    setProfileOpen(false);
+    setNotifOpen(false);
+    setMobileSearchOpen(false);
+  }, [location.pathname]);
+
+  /* ── OUTSIDE CLICK HANDLER (CLEAN + SAFE) ── */
+  useEffect(() => {
+    const handleClick = (e) => {
       if (profileRef.current && !profileRef.current.contains(e.target)) {
         setProfileOpen(false);
       }
+
+      if (notifRef.current && !notifRef.current.contains(e.target)) {
+        setNotifOpen(false);
+      }
     };
-    document.addEventListener("mousedown", handle);
-    return () => document.removeEventListener("mousedown", handle);
+
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
   }, []);
+
+  /* ── THEME APPLY ── */
+  useLayoutEffect(() => {
+    document.documentElement.setAttribute("data-theme", theme);
+    localStorage.setItem(THEME_KEY, theme);
+  }, [theme]);
+
+  /* ── BODY SCROLL LOCK ── */
+  useEffect(() => {
+    document.body.style.overflow = menuOpen ? "hidden" : "";
+    return () => (document.body.style.overflow = "");
+  }, [menuOpen]);
+
+  const toggleTheme = () =>
+    setTheme((t) => (t === "dark" ? "light" : "dark"));
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -85,124 +107,147 @@ function Navbar() {
 
   return (
     <>
-      <header className={`navbar${menuOpen ? " navbar--menu-open" : ""}`}>
+      <header className="navbar">
         <div className="navbar__inner">
 
-          {/* ── Brand ── */}
-          <NavLink to="/chat" className="navbar__brand" aria-label="SentraChat home">
-            <span className="navbar__brand-mark">SC</span>
+          {/* ── BRAND ── */}
+          <NavLink to="/" className="navbar__brand">
+            <span className="navbar__brand-badge">
+              <LuMessageCircle />
+            </span>
             <span className="navbar__brand-name">SentraChat</span>
           </NavLink>
 
-          {/* ── Desktop nav ── */}
-          <nav className="navbar__nav" aria-label="Main">
-            {navItems.map(({ to, label, Icon }) => (
-              <NavLink
-                key={to}
-                to={to}
-                className={({ isActive }) => `navbar__link${isActive ? " active" : ""}`}
-              >
-                <span className="navbar__link-icon"><Icon /></span>
-                {label}
-              </NavLink>
-            ))}
-          </nav>
-
-          {/* ── Right: profile + hamburger ── */}
-          <div className="navbar__right">
-
-            {/* Profile dropdown */}
-            <div className="navbar__profile" ref={profileRef}>
-              <button
-                className={`navbar__profile-btn${profileOpen ? " open" : ""}`}
-                onClick={() => setProfileOpen((v) => !v)}
-                aria-expanded={profileOpen}
-                aria-haspopup="true"
-              >
-                <span className="navbar__avatar">
-                  {username.charAt(0).toUpperCase()}
-                </span>
-                <span className="navbar__profile-name">{username}</span>
-                <span className="navbar__profile-chevron"><IconChevron /></span>
-              </button>
-
-              {profileOpen && (
-                <div className="navbar__dropdown" role="menu">
-                  <div className="navbar__dropdown-header">
-                    <p className="navbar__dropdown-username">{username}</p>
-                    <p className="navbar__dropdown-role">
-                      {isAdmin ? "Administrator" : "Member"}
-                    </p>
-                  </div>
-                  <div className="navbar__dropdown-divider" />
-                  <button
-                    className="navbar__dropdown-item navbar__dropdown-item--danger"
-                    onClick={handleLogout}
-                    role="menuitem"
-                  >
-                    <IconLogout /> Log out
-                  </button>
-                </div>
-              )}
-            </div>
-
-            {/* Hamburger */}
-            <button
-              className="navbar__hamburger"
-              onClick={() => setMenuOpen((v) => !v)}
-              aria-label={menuOpen ? "Close menu" : "Open menu"}
-              aria-expanded={menuOpen}
-            >
-              {menuOpen ? <IconClose /> : <IconMenu />}
-            </button>
-          </div>
-        </div>
-
-        {/* ── Mobile menu (slides down inside the header) ── */}
-        <div
-          className={`navbar__mobile${menuOpen ? " navbar__mobile--open" : ""}`}
-          aria-hidden={!menuOpen}
-        >
-          <nav className="navbar__mobile-nav">
+          {/* ── CENTER NAV ── */}
+          <nav className="navbar__nav">
             {navItems.map(({ to, label, Icon }) => (
               <NavLink
                 key={to}
                 to={to}
                 className={({ isActive }) =>
-                  `navbar__mobile-link${isActive ? " active" : ""}`
+                  `navbar__link${isActive ? " navbar__link--active" : ""}`
                 }
               >
-                <span className="navbar__link-icon"><Icon /></span>
-                {label}
+                <Icon className="navbar__link-icon" />
+                <span className="navbar__link-label">{label}</span>
               </NavLink>
             ))}
           </nav>
 
-          <div className="navbar__mobile-footer">
-            <div className="navbar__mobile-user">
-              <span className="navbar__avatar">{username.charAt(0).toUpperCase()}</span>
-              <div>
-                <p className="navbar__dropdown-username">{username}</p>
-                <p className="navbar__dropdown-role">
-                  {isAdmin ? "Administrator" : "Member"}
-                </p>
-              </div>
+          {/* ── RIGHT SIDE ── */}
+          <div className="navbar__right">
+
+            {/* SEARCH */}
+            <div className="navbar__search">
+              <LuSearch className="navbar__search-icon" />
+              <input placeholder="Search..." className="navbar__search-input" />
             </div>
-            <button className="navbar__mobile-logout" onClick={handleLogout}>
-              <IconLogout /> Log out
+
+            {/* NOTIFICATIONS */}
+            <div className="navbar__notif" ref={notifRef}>
+              <button
+                type="button"
+                className="navbar__icon-btn"
+                onClick={() => setNotifOpen((v) => !v)}
+              >
+                <LuBell />
+                <span className="navbar__notif-dot" />
+              </button>
+
+              {notifOpen && (
+                <div className="navbar__notif-dropdown">
+                  <div className="navbar__notif-header">
+                    <h4>Notifications</h4>
+                    <span>3 new</span>
+                  </div>
+
+                  <div className="navbar__notif-list">
+                    <div className="navbar__notif-item unread">
+                      New message received
+                    </div>
+                    <div className="navbar__notif-item unread">
+                      AI analysis completed
+                    </div>
+                    <div className="navbar__notif-item">
+                      System update available
+                    </div>
+                  </div>
+
+                  <button className="navbar__notif-footer">
+                    Mark all as read
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* THEME */}
+            <button className="navbar__icon-btn" onClick={toggleTheme}>
+              {theme === "dark" ? <LuSun /> : <LuMoon />}
             </button>
+
+            {/* PROFILE */}
+            <div className="navbar__profile" ref={profileRef}>
+              <button
+                className={`navbar__profile-btn${
+                  profileOpen ? " navbar__profile-btn--open" : ""
+                }`}
+                onClick={() => setProfileOpen((v) => !v)}
+              >
+                <span className="navbar__avatar">
+                  {username.charAt(0).toUpperCase()}
+                </span>
+                <span className="navbar__profile-name">{username}</span>
+                <LuChevronDown />
+              </button>
+
+              {profileOpen && (
+                <div className="navbar__dropdown">
+                  <button
+                    className="navbar__dropdown-item navbar__dropdown-item--danger"
+                    onClick={handleLogout}
+                  >
+                    <LuLogOut /> Logout
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* MOBILE MENU */}
+            <button
+              className="navbar__hamburger"
+              onClick={() => setMenuOpen((v) => !v)}
+            >
+              {menuOpen ? <LuX /> : <LuMenu />}
+            </button>
+
           </div>
         </div>
       </header>
 
-      {/* Overlay to close mobile menu */}
+      {/* OVERLAY */}
       {menuOpen && (
-        <div
-          className="navbar__overlay"
-          onClick={() => setMenuOpen(false)}
-          aria-hidden="true"
-        />
+        <div className="navbar__overlay" onClick={() => setMenuOpen(false)} />
       )}
+
+      {/* DRAWER */}
+      <div className={`navbar__drawer ${menuOpen ? "navbar__drawer--open" : ""}`}>
+        <nav className="navbar__drawer-nav">
+          {navItems.map(({ to, label, Icon }) => (
+            <NavLink
+              key={to}
+              to={to}
+              onClick={() => setMenuOpen(false)}
+              className="navbar__drawer-link"
+            >
+              <Icon /> {label}
+            </NavLink>
+          ))}
+        </nav>
+
+        <button className="navbar__drawer-logout" onClick={handleLogout}>
+          <LuLogOut /> Logout
+        </button>
+      </div>
     </>
   );
 }

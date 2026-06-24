@@ -1,0 +1,111 @@
+/* ═══════════════════════════════════════════════════
+   Features Page — gradient-border grid cards
+═══════════════════════════════════════════════════ */
+
+.features-page {
+  padding: 60px clamp(16px, 4vw, 40px) 90px;
+}
+
+.features-container {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+/* ─── Header ───────────────────────────────────────── */
+.features-header {
+  text-align: center;
+  margin-bottom: 48px;
+}
+
+.features-header__title {
+  font-size: clamp(32px, 5vw, 44px);
+  font-weight: 800;
+  letter-spacing: -1px;
+  color: var(--text-h);
+  margin: 0 0 10px;
+}
+
+.features-header__sub {
+  font-size: 17px;
+  color: var(--text);
+  margin: 0;
+}
+
+/* ─── Grid ─────────────────────────────────────────── */
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 22px;
+  margin-bottom: 70px;
+}
+
+/* Gradient-border trick: outer gradient bg + inset solid inner panel */
+.feature-card {
+  position: relative;
+  border-radius: var(--r-xl, 20px);
+  padding: 1.5px;
+  background: linear-gradient(135deg, var(--border), var(--border));
+  transition: background 0.35s ease, transform 0.35s ease, box-shadow 0.35s ease;
+}
+
+.feature-card:hover {
+  background: linear-gradient(135deg, var(--accent), #3b82f6);
+  transform: translateY(-6px);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.1);
+}
+
+.feature-card__inner {
+  background: var(--bg);
+  border-radius: inherit;
+  padding: 28px 24px;
+  height: 100%;
+}
+
+.feature-card__icon {
+  font-size: 32px;
+  margin-bottom: 14px;
+  line-height: 1;
+}
+
+.feature-card__title {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text-h);
+  margin: 0 0 10px;
+}
+
+.feature-card__desc {
+  font-size: 14px;
+  color: var(--text);
+  line-height: 1.65;
+  margin: 0;
+}
+
+@media (prefers-color-scheme: dark) {
+  .feature-card:hover {
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.5), 0 0 24px var(--accent-border);
+  }
+}
+
+/* ─── Footer ───────────────────────────────────────── */
+.features-footer {
+  text-align: center;
+}
+
+.features-footer__title {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-h);
+  margin: 0 0 8px;
+}
+
+.features-footer__sub {
+  font-size: 14px;
+  color: var(--text);
+  margin: 0;
+}
+
+/* ─── Mobile ───────────────────────────────────────── */
+@media (max-width: 600px) {
+  .features-page { padding: 40px 16px 60px; }
+}

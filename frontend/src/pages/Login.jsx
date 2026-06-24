@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { LuMessageCircle } from "react-icons/lu";
 import "./Login.css";
 
 function Login() {
@@ -33,52 +34,73 @@ function Login() {
 
   return (
     <div className="auth-page">
-      <div className="auth-card">
-        <div className="auth-card__logo">
-          <span className="auth-card__logo-mark">SC</span>
-          <span className="auth-card__logo-text">SentraChat</span>
+      <div className="auth-shell">
+
+        <aside className="auth-brand-panel">
+          <div className="auth-brand-panel__blob auth-brand-panel__blob--1" aria-hidden="true" />
+          <div className="auth-brand-panel__blob auth-brand-panel__blob--2" aria-hidden="true" />
+          <div className="auth-brand-panel__content">
+            <div className="auth-brand-panel__logo">
+              <span className="auth-brand-panel__logo-mark"><LuMessageCircle /></span>
+              <span className="auth-brand-panel__logo-text">SentraChat</span>
+            </div>
+            <h2 className="auth-brand-panel__title">AI-powered conversations, reimagined</h2>
+            <p className="auth-brand-panel__desc">
+              Real-time, sentiment-aware chat with secure and seamless communication.
+            </p>
+          </div>
+        </aside>
+
+        <div className="auth-form-panel">
+          <div className="auth-card">
+            <div className="auth-card__logo">
+              <span className="auth-card__logo-mark">SC</span>
+              <span className="auth-card__logo-text">SentraChat</span>
+            </div>
+            <h2 className="auth-card__title">Welcome back</h2>
+            <p className="auth-card__subtitle">Sign in to your account to continue</p>
+
+            <form className="auth-form" onSubmit={handleSubmit}>
+              <div className="auth-field">
+                <label htmlFor="email">Email</label>
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  placeholder="you@example.com"
+                  value={formData.email}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+
+              <div className="auth-field">
+                <label htmlFor="password">Password</label>
+                <input
+                  id="password"
+                  name="password"
+                  type="password"
+                  placeholder="••••••••"
+                  value={formData.password}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+
+              {error && <p className="auth-error">{error}</p>}
+
+              <button className="auth-btn" type="submit" disabled={loading}>
+                {loading ? "Signing in…" : "Sign in"}
+              </button>
+            </form>
+
+            <p className="auth-card__footer">
+              Don't have an account?{" "}
+              <Link to="/register">Create one</Link>
+            </p>
+          </div>
         </div>
-        <h2 className="auth-card__title">Welcome back</h2>
-        <p className="auth-card__subtitle">Sign in to your account to continue</p>
 
-        <form className="auth-form" onSubmit={handleSubmit}>
-          <div className="auth-field">
-            <label htmlFor="email">Email</label>
-            <input
-              id="email"
-              name="email"
-              type="email"
-              placeholder="you@example.com"
-              value={formData.email}
-              onChange={handleChange}
-              required
-            />
-          </div>
-
-          <div className="auth-field">
-            <label htmlFor="password">Password</label>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              placeholder="••••••••"
-              value={formData.password}
-              onChange={handleChange}
-              required
-            />
-          </div>
-
-          {error && <p className="auth-error">{error}</p>}
-
-          <button className="auth-btn" type="submit" disabled={loading}>
-            {loading ? "Signing in…" : "Sign in"}
-          </button>
-        </form>
-
-        <p className="auth-card__footer">
-          Don't have an account?{" "}
-          <Link to="/register">Create one</Link>
-        </p>
       </div>
     </div>
   );
