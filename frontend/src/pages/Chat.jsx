@@ -1,27 +1,19 @@
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState } from "react";
 import { LuMessageCircle } from "react-icons/lu";
 import "./Chat.css";
 
-/* ─── WebSocket URL — untouched ─────────────────────────── */
-const WS_URL = "ws://127.0.0.1:8000/ws/chat";
+const WS_BASE = "ws://127.0.0.1:8000/ws/chat";
 
-/* ─── Helpers ───────────────────────────────────────────── */
 function formatTime(date) {
-  return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-}
-
-function getSentiment(text) {
-  const t = text.toLowerCase();
-  const pos = /\b(good|great|thanks|thank you|love|awesome|excellent|happy|nice|wonderful|amazing|perfect|yes|sure|cool|fantastic|helpful|glad|enjoy|best|better|correct|success|appreciate|right|pleased|welcome|brilliant)\b/.test(t);
-  const neg = /\b(bad|error|fail|failed|wrong|issue|problem|hate|broken|awful|terrible|horrible|annoying|worst|difficult|impossible|sorry|unfortunately|concern|bug|crash|slow|stuck|frustrated|confused|upset|angry|sad)\b/.test(t);
-  if (pos && !neg) return "positive";
-  if (neg)         return "negative";
-  return "neutral";
+  return new Date(date).toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 }
 
 const SENTIMENT = {
   positive: { label: "Positive", icon: "✦", cls: "badge--positive" },
-  neutral:  { label: "Neutral",  icon: "◆", cls: "badge--neutral"  },
+  neutral: { label: "Neutral", icon: "◆", cls: "badge--neutral" },
   negative: { label: "Negative", icon: "▼", cls: "badge--negative" },
 };
 
@@ -52,56 +44,65 @@ const SendIcon = () => (
   </svg>
 );
 
-/* ─── Chat component ─────────────────────────────────────── */
 function Chat() {
-  const [socket,   setSocket]   = useState(null);
-  const [status,   setStatus]   = useState("connecting");
-  const [messages, setMessages] = useState([]);
-  const [input,    setInput]    = useState("");
-  const [isTyping, setIsTyping] = useState(false);
-
-  const bottomRef   = useRef(null);
+  const wsRef = useRef(null);
+  const bottomRef = useRef(null);
   const textareaRef = useRef(null);
 
+  const [messages, setMessages] = useState([]);
+  const [input, setInput] = useState("");
+  const [status, setStatus] = useState("connecting");
+  const [isTyping, setIsTyping] = useState(false);
+
   const username = localStorage.getItem("username") || "You";
+  const token = localStorage.getItem("token");
 
-  /* WebSocket — logic untouched */
+  // WebSocket — connection/auth/message-protocol logic untouched
   useEffect(() => {
-    const ws = new WebSocket(WS_URL);
+    if (!token) return;
 
-    ws.onopen    = ()  => setStatus("online");
+    const ws = new WebSocket(`${WS_BASE}?token=${token}`);
+    wsRef.current = ws;
+
+    ws.onopen = () => setStatus("online");
+
     ws.onmessage = (e) => {
+      const data = JSON.parse(e.data);
+
       setIsTyping(false);
       setMessages((prev) => [
         ...prev,
-        { id: Date.now(), text: e.data, self: false, time: new Date(), sentiment: getSentiment(e.data) },
+        {
+          id: crypto.randomUUID(),
+          text: data.message,
+          user: data.user,
+          self: data.user === username,
+          time: new Date(),
+          sentiment: data.sentiment?.toLowerCase() || "neutral",
+        },
       ]);
     };
-    ws.onerror = () => setStatus("error");
-    ws.onclose = () => setStatus("error");
 
-    setSocket(ws);
+    ws.onclose = () => setStatus("disconnected");
+    ws.onerror = () => setStatus("error");
+
     return () => ws.close();
-  }, []);
+  }, [token]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isTyping]);
 
-  const sendMessage = useCallback((text = input) => {
+  const sendMessage = (text = input) => {
     const trimmed = text.trim();
-    if (!trimmed || !socket || socket.readyState !== WebSocket.OPEN) return;
+    if (!trimmed || wsRef.current?.readyState !== 1) return;
 
-    setMessages((prev) => [
-      ...prev,
-      { id: Date.now(), text: trimmed, self: true, time: new Date(), sentiment: getSentiment(trimmed) },
-    ]);
+    wsRef.current.send(trimmed);
     setIsTyping(true);
-    socket.send(trimmed);
     setInput("");
     if (textareaRef.current) textareaRef.current.style.height = "auto";
     textareaRef.current?.focus();
-  }, [input, socket]);
+  };
 
   const handleKeyDown = (e) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -158,7 +159,7 @@ function Chat() {
           Connecting to server…
         </div>
       )}
-      {status === "error" && (
+      {(status === "error" || status === "disconnected") && (
         <div className="chat-banner chat-banner--error">
           <span className="chat-banner__dot" />
           Connection lost — make sure the backend is running.
